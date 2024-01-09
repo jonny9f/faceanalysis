@@ -42,7 +42,25 @@ function ModeToggle() {
 
 function EmotionDisplay() {
   const [response, setResponse] = useState('');
+  const [isRequestPending, setIsRequestPending] = useState(false);
   const videoRef = useRef(null);
+
+  const canvasRef = useRef(null); // Ref for the canvas element
+
+  useEffect(() => {
+    // Initialize the canvas element once
+    const canvas = document.createElement('canvas');
+    canvasRef.current = canvas;
+
+    // Get user media and start capturing images
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        videoRef.current.srcObject = stream;
+        captureImageFromVideo();
+      })
+      .catch(console.error);
+  }, []);
+
 
   useEffect(() => {
     navigator.mediaDevices.getUserMedia({ video: true })
@@ -52,38 +70,62 @@ function EmotionDisplay() {
       .catch(console.error);
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      captureImageFromVideo();
-    }, 200); // Adjust the interval as needed
-
-    return () => clearInterval(interval);
-  }, []);
+ 
 
   const captureImageFromVideo = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    canvas.getContext('2d').drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    if (!isRequestPending && videoRef.current && canvasRef.current ) {  // Check if no request is pending
+      console.log( 'captureImageFromVideo')
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      canvas.getContext('2d').drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
 
-    // Convert the canvas to a Blob directly
-    canvas.toBlob(sendImageToServer, 'image/jpeg');
+      // Convert the canvas to a Blob directly
+      canvas.toBlob(sendImageToServer, 'image/jpeg');
+    } else {
+      setTimeout(captureImageFromVideo, 500);
+    }
   };
 
   const sendImageToServer = (blob) => {
+    console.log( 'sendImageToServer')
+
+
+
     const reader = new FileReader();
     try {
+      setIsRequestPending(true); // Set request status to pending
       reader.readAsDataURL(blob);
       reader.onloadend = () => {
-        axios.post('/analyze', { image: reader.result })
+
+        console.log('Result length:', reader.result.length);
+
+        axios.post('http://localhost:5000/analyze', { image: reader.result })
           .then(response => {
+
             setResponse(JSON.stringify(response.data, null, 2));
+            
           })
-          .catch(console.error);
+          .catch(error => {
+            console.error(error);
+        })
+        .finally(() => {
+            // Set the timeout for the next capture regardless of success or error
+            setIsRequestPending(false); // Reset request status
+            setTimeout(captureImageFromVideo, 500);
+        });
       };
+      reader.onerror = (error) => {
+        console.error('Error reading file:', error);
+        // Set the timeout if an error occurs during file reading
+        setIsRequestPending(false); // Reset request status
+        setTimeout(captureImageFromVideo, 500);
+      } ;
     }
     catch {
-
+      console.log( 'error')
+      setIsRequestPending(false); // Reset request status
+      setTimeout(captureImageFromVideo, 500);
     }
   };
 

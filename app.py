@@ -9,9 +9,11 @@ import os
 import base64
 from cv2 import CascadeClassifier
 
+os.environ["CUDA_VISIBLE_DEVICES"]=""
+
 app = Flask(__name__, static_folder="frontend/build/static", template_folder="frontend/build")
 
-
+face_cascade = CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 logger = logging.getLogger(__name__)
 
 model = DeepFace.build_model("Emotion")
@@ -30,7 +32,7 @@ def analyze():
 
 
         # Convert to grayscale
-        face_cascade = CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
         emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
         gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -40,6 +42,7 @@ def analyze():
         emotion = "Unknown"
         response = {}
         for (x, y, w, h) in faces:
+            response['face_coordinates'] = {"x": int(x), "y": int(y), "width": int(w), "height": int(h)},
             face_roi = gray_img[y:y+h, x:x+w]
             resized_face = cv2.resize(face_roi, (48, 48), interpolation=cv2.INTER_AREA)
             normalized_face = resized_face / 255.0
@@ -51,14 +54,13 @@ def analyze():
             predictions = {emotion_labels[i]: float(preds[0][i]) for i in range(len(emotion_labels))}
 
             # Add face coordinates and predictions to the response
-            response = {
-                "face_coordinates": {"x": int(x), "y": int(y), "width": int(w), "height": int(h)},
-                "predictions": predictions,
-                "emotion": emotion
-            }
+      
+            response["predictions" ] = predictions,
+            response["emotion" ] = emotion
+
     except Exception as e:
         logger.error(e)
-        response = {"error": str(e)}
+        response["error"] = str(e)
 
     return response
 
