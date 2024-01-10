@@ -9,7 +9,6 @@ import os
 import base64
 from cv2 import CascadeClassifier
 
-os.environ["CUDA_VISIBLE_DEVICES"]=""
 
 app = Flask(__name__, static_folder="frontend/build/static", template_folder="frontend/build")
 
@@ -18,9 +17,6 @@ logger = logging.getLogger(__name__)
 
 model = DeepFace.build_model("Emotion")
 
-# @app.route("/")
-# def hello():
-#     return render_template('index.html')
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
@@ -65,6 +61,5 @@ def analyze():
     return response
 
 
-
 if __name__ == "__main__":
-    app.run(host='localhost', debug=True, threaded=False)
+    app.run(host='0.0.0.0', threaded=False)
