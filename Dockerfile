@@ -3,7 +3,7 @@ ENV DEBIAN_FRONTEND noninteractive\
     SHELL=/bin/bash
 RUN apt-get update && apt-get install -y --no-install-recommends wget
 WORKDIR /app
-RUN pip install deepface flask flask_cors && pip uninstall opencv-python -y && pip install opencv-python-headless 
+RUN pip install deepface fastapi uvicorn && pip uninstall opencv-python -y && pip install opencv-python-headless 
 COPY serve.py  haarcascade_frontalface_default.xml download_model.py .
 RUN python download_model.py
 #COPY runprod_entrypoint.py .
