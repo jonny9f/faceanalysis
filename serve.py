@@ -8,8 +8,13 @@ from cv2 import CascadeClassifier
 import base64
 from typing import Optional
 from typing import Dict
+import mangum
+from mangum import Mangum
+import os
+
 
 app = FastAPI()
+handler = Mangum(app)
 
 face_cascade = CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 logger = logging.getLogger(__name__)
@@ -79,6 +84,6 @@ def ping():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5000, proxy_headers=True)
+    uvicorn.run(app, host="0.0.0.0", port=8080, proxy_headers=True)
 
 
