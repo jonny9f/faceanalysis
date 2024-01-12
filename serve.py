@@ -1,4 +1,3 @@
-# File: app.py (FastAPI Backend)
 import logging
 from fastapi import FastAPI, HTTPException, File, UploadFile
 from pydantic import BaseModel, Field
@@ -80,6 +79,6 @@ def ping():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    uvicorn.run(app, host="0.0.0.0", port=5000, proxy_headers=True)
 
 
