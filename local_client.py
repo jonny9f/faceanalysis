@@ -7,6 +7,14 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 from collections import defaultdict
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+FACEANALYSIS_API_KEY = os.getenv("FACEANALYSIS_API_KEY")
+
 def plot_emotions_over_time(emotions_over_time, image):
     # Convert the emotions dictionary to a format suitable for plotting
     labels = list(emotions_over_time.keys())
@@ -46,9 +54,13 @@ def encode_image_to_base64(image):
 def send_image_to_server(image_data):
     start_time = time.time()
     print( 'sending image to server')
-    url = 'http://localhost:5000/analyze'
-    headers = {'Content-Type': 'application/json'}
-    data = {"image": f"data:image/jpeg;base64,{image_data}"}
+    url = 'https://trbfa988f2.execute-api.eu-west-2.amazonaws.com/dev/api/v1/analyse'
+    headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': FACEANALYSIS_API_KEY
+        }
+    
+    data = {"image": f"{image_data}"}
     response = requests.post(url, timeout=2, headers=headers, data=json.dumps(data))
     print(f"Response time: {time.time() - start_time}")
     print(f"Status Code: {response.status_code}")
@@ -126,13 +138,19 @@ while True:
         print( result )
 
         if 'emotion' in result:
+
             print(result['emotion'])
 
          
             # Create a list of emotion values scaled to range [0, 1]
             d = []
 
-            for emotion, value in result['predictions'][0].items():
+            predictions = result['predictions']
+            if not predictions:
+                continue
+            
+
+            for emotion, value in predictions.items():
                 d.append( value )
 
             # Append the new data to the list
