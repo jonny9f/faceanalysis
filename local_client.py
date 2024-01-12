@@ -7,6 +7,14 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 from collections import defaultdict
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+FACEANALYSIS_API_KEY = os.getenv("FACEANALYSIS_API_KEY")
+
 def plot_emotions_over_time(emotions_over_time, image):
     # Convert the emotions dictionary to a format suitable for plotting
     labels = list(emotions_over_time.keys())
@@ -46,8 +54,12 @@ def encode_image_to_base64(image):
 def send_image_to_server(image_data):
     start_time = time.time()
     print( 'sending image to server')
-    url = 'http://localhost:5000/api/v1/analyse'
-    headers = {'Content-Type': 'application/json'}
+    url = 'https://trbfa988f2.execute-api.eu-west-2.amazonaws.com/dev/api/v1/analyse'
+    headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': FACEANALYSIS_API_KEY
+        }
+    
     data = {"image": f"{image_data}"}
     response = requests.post(url, timeout=2, headers=headers, data=json.dumps(data))
     print(f"Response time: {time.time() - start_time}")
