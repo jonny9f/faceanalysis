@@ -14,6 +14,7 @@ import os
 load_dotenv()
 
 FACEANALYSIS_API_KEY = os.getenv("FACEANALYSIS_API_KEY")
+FACEANALYSIS_API_URL = os.getenv("FACEANALYSIS_API_URL")
 
 def plot_emotions_over_time(emotions_over_time, image):
     # Convert the emotions dictionary to a format suitable for plotting
@@ -23,7 +24,7 @@ def plot_emotions_over_time(emotions_over_time, image):
     print( data )
 
 
-cap = cv2.VideoCapture(1)  # 0 is usually the default camera
+cap = cv2.VideoCapture(0)  # 0 is usually the default camera
 
 def capture_image():
 
@@ -54,7 +55,7 @@ def encode_image_to_base64(image):
 def send_image_to_server(image_data):
     start_time = time.time()
     print( 'sending image to server')
-    url = 'https://trbfa988f2.execute-api.eu-west-2.amazonaws.com/dev/api/v1/analyse'
+    url = FACEANALYSIS_API_URL
     headers = {
         'Content-Type': 'application/json',
         'x-api-key': FACEANALYSIS_API_KEY
